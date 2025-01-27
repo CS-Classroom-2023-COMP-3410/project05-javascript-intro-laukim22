@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        .calculator {
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            background-color: #fff;
+            padding: 20px;
+        }
+        .display {
+            width: 100%;
+            height: 60px;
+            font-size: 30px;
+            margin-bottom: 20px;
+            text-align: right;
+            padding: 10px;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 10px;
+            background-color: #eaeaea;
+        }
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            width: 22%;
+            height: 60px;
+            font-size: 20px;
+            margin: 5px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button.operation {
+            background-color: #ff9500;
+            color: white;
+        }
+        button.clear {
+            background-color: #ff3b30;
+            color: white;
+            width: 48%;
+        }
+        button.equals {
+            background-color: #34c759;
+            color: white;
+            width: 48%;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" id="display" class="display" disabled>
+        <div class="button-row">
+            <button onclick="clearDisplay()" class="clear">C</button>
+            <button onclick="appendOperator('/')" class="operation">/</button>
+            <button onclick="appendOperator('*')" class="operation">*</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendNumber(7)">7</button>
+            <button onclick="appendNumber(8)">8</button>
+            <button onclick="appendNumber(9)">9</button>
+            <button onclick="appendOperator('-')" class="operation">-</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendNumber(4)">4</button>
+            <button onclick="appendNumber(5)">5</button>
+            <button onclick="appendNumber(6)">6</button>
+            <button onclick="appendOperator('+')" class="operation">+</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendNumber(1)">1</button>
+            <button onclick="appendNumber(2)">2</button>
+            <button onclick="appendNumber(3)">3</button>
+            <button onclick="calculateSquareRoot()">√</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendNumber(0)">0</button>
+            <button onclick="appendOperator('.')">.</button>
+            <button onclick="calculatePercentage()">%</button>
+            <button onclick="calculateResult()" class="equals">=</button>
+        </div>
+    </div>
+
+    <script>
+        let display = document.getElementById('display');
+        let memory = '';
+
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        function appendNumber(number) {
+            display.value += number;
+        }
+
+        function appendOperator(operator) {
+            display.value += operator;
+        }
+
+        function calculateResult() {
+            try {
+                display.value = eval(display.value);
+            } catch {
+                display.value = 'Error';
+            }
+        }
+
+        function calculateSquareRoot() {
+            try {
+                display.value = Math.sqrt(eval(display.value));
+            } catch {
+                display.value = 'Error';
+            }
+        }
+
+        function calculatePercentage() {
+            try {
+                display.value = eval(display.value) / 100;
+            } catch {
+                display.value = 'Error';
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+<!-- by microsoft copilot -->
+<!-- since chatgpt I liked the ux better but the sqrt wouldn't work -->

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customizable Keyboard Trainer</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fb;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        h1 {
+            color: #6c5ce7;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .text-display {
+            font-size: 28px;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            width: 70%;
+            max-width: 800px;
+            min-height: 60px;
+            background-color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            white-space: pre-wrap;
+        }
+
+        input {
+            margin-top: 20px;
+            font-size: 20px;
+            padding: 12px 20px;
+            width: 70%;
+            max-width: 800px;
+            border-radius: 8px;
+            border: 2px solid #6c5ce7;
+            outline: none;
+            transition: border 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #00b894;
+        }
+
+        .stats {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #2d3436;
+        }
+
+        .highlight {
+            background-color: #ffeaa7;
+        }
+
+        .error {
+            color: #d63031;
+        }
+
+        .button {
+            margin-top: 30px;
+            padding: 12px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #00b894;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #0984e3;
+        }
+
+        .footer {
+            margin-top: 50px;
+            font-size: 14px;
+            color: #b2bec3;
+        }
+
+        .footer a {
+            color: #6c5ce7;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customizable Keyboard Trainer</h1>
+
+    <div class="text-display" id="text-display"></div>
+    <input type="text" id="user-input" placeholder="Start typing..." autofocus />
+
+    <div class="stats" id="stats">
+        <p>WPM: <span id="wpm">0</span></p>
+        <p>Accuracy: <span id="accuracy">100%</span></p>
+    </div>
+
+    <button class="button" id="restart-btn" onclick="restartGame()">Restart</button>
+
+    <div class="footer">
+        <!-- <p>Designed with ❤️ by <a href="https://github.com/yourusername" target="_blank">Lauren</a></p> -->
+        <p>Designed with ❤️ by Lauren</p>
+    </div>
+
+    <script>
+        let textList = [
+            "The quick brown fox jumps over the lazy dog.",
+            "Pack my box with five dozen liquor jugs.",
+            "A journey of a thousand miles begins with a single step."
+        ];
+        let currentText = "";
+        let startTime;
+        let wordCount = 0;
+        let correctCount = 0;
+        let errorCount = 0;
+
+        function generateText() {
+            let randomText = textList[Math.floor(Math.random() * textList.length)];
+            currentText = randomText;
+            document.getElementById('text-display').textContent = randomText;
+        }
+
+        function startGame() {
+            generateText();
+            document.getElementById('user-input').value = '';
+            startTime = Date.now();
+            wordCount = 0;
+            correctCount = 0;
+            errorCount = 0;
+        }
+
+        function updateStats() {
+            let elapsedTime = (Date.now() - startTime) / 1000;
+            let wpm = Math.round((wordCount / elapsedTime) * 60);
+            let accuracy = Math.round((correctCount / (correctCount + errorCount)) * 100);
+            document.getElementById('wpm').textContent = wpm;
+            document.getElementById('accuracy').textContent = accuracy + "%";
+        }
+
+        document.getElementById('user-input').addEventListener('input', function() {
+            let userInput = this.value;
+            let displayedText = currentText;
+            wordCount = userInput.split(' ').length;
+
+            let highlightedText = "";
+            for (let i = 0; i < displayedText.length; i++) {
+                let currentChar = displayedText[i];
+                if (i < userInput.length) {
+                    if (userInput[i] === currentChar) {
+                        highlightedText += `<span class="highlight">${currentChar}</span>`;
+                        correctCount++;
+                    } else {
+                        highlightedText += `<span class="error">${currentChar}</span>`;
+                        errorCount++;
+                    }
+                } else {
+                    highlightedText += currentChar;
+                }
+            }
+
+            document.getElementById('text-display').innerHTML = highlightedText;
+            updateStats();
+            
+            if (userInput === displayedText) {
+                setTimeout(() => {
+                    alert("Well done! You completed the text.");
+                    restartGame();
+                }, 1000);
+            }
+        });
+
+        function restartGame() {
+            startGame();
+        }
+
+        // Start the game when the page loads
+        window.onload = startGame;
+    </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Matching Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f7f7f7;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .game-info {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 10px;
+        }
+
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: #4CAF50;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        .card.flipped {
+            background-color: #fff;
+            color: #4CAF50;
+            cursor: default;
+        }
+
+        .restart-btn {
+            margin-top: 1rem;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        .restart-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Memory Matching Game</h1>
+    <div class="game-info">
+        Moves: <span id="moves">0</span> | Time: <span id="time">0</span>s
+    </div>
+    <div class="grid" id="grid"></div>
+    <button class="restart-btn" id="restart">Restart</button>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const movesElement = document.getElementById('moves');
+        const timeElement = document.getElementById('time');
+        const restartButton = document.getElementById('restart');
+
+        let moves = 0;
+        let timer = 0;
+        let interval;
+        let flippedCards = [];
+        let matchedPairs = 0;
+        const totalPairs = 8;
+
+        const symbols = ['😀', '😁', '😂', '🤣', '😜', '🙂', '🙃', '😉'];
+
+        function initializeGame() {
+            const cards = [...symbols, ...symbols];
+            cards.sort(() => Math.random() - 0.5);
+
+            grid.innerHTML = '';
+            cards.forEach((symbol) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.symbol = symbol;
+                card.textContent = '';
+                card.addEventListener('click', flipCard);
+                grid.appendChild(card);
+            });
+
+            moves = 0;
+            timer = 0;
+            matchedPairs = 0;
+            flippedCards = [];
+            movesElement.textContent = moves;
+            timeElement.textContent = timer;
+            clearInterval(interval);
+            interval = setInterval(() => {
+                timer++;
+                timeElement.textContent = timer;
+            }, 1000);
+        }
+
+        function flipCard() {
+            if (this.classList.contains('flipped') || flippedCards.length === 2) return;
+
+            this.classList.add('flipped');
+            this.textContent = this.dataset.symbol;
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            moves++;
+            movesElement.textContent = moves;
+
+            const [card1, card2] = flippedCards;
+            if (card1.dataset.symbol === card2.dataset.symbol) {
+                matchedPairs++;
+                flippedCards = [];
+
+                if (matchedPairs === totalPairs) {
+                    clearInterval(interval);
+                    alert(`Congratulations! You completed the game in ${moves} moves and ${timer} seconds.`);
+                }
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    card1.textContent = '';
+                    card2.textContent = '';
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+
+        restartButton.addEventListener('click', initializeGame);
+
+        initializeGame();
+    </script>
+</body>
+</html>

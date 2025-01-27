@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Canvas</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .controls > * {
+            margin: 0 10px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            cursor: crosshair;
+        }
+        label {
+            margin-right: 5px;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label for="brushSize">Brush Size:</label>
+        <input type="number" id="brushSize" value="5" min="1" max="50">
+        
+        <label for="brushColor">Brush Color:</label>
+        <input type="color" id="brushColor" value="#000000">
+        
+        <label for="bgColor">Background:</label>
+        <input type="color" id="bgColor" value="#ffffff">
+        
+        <button id="undoBtn">Undo</button>
+        <button id="clearBtn">Clear</button>
+        <button id="saveBtn">Save</button>
+    </div>
+    
+    <canvas id="drawingCanvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const undoStack = [];
+        let isDrawing = false;
+        let currentPath = [];
+
+        // Set initial background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Drawing functions
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            currentPath = [[x, y]];
+            
+            draw(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = document.getElementById('brushColor').value;
+            ctx.lineWidth = document.getElementById('brushSize').value;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            
+            currentPath.push([x, y]);
+        }
+
+        function stopDrawing() {
+            if (!isDrawing) return;
+            
+            isDrawing = false;
+            ctx.closePath();
+            undoStack.push({
+                path: [...currentPath],
+                color: document.getElementById('brushColor').value,
+                size: document.getElementById('brushSize').value
+            });
+        }
+
+        // Button functions
+        function undo() {
+            if (undoStack.length === 0) return;
+            
+            // Clear canvas
+            const bgColor = document.getElementById('bgColor').value;
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Remove last path
+            undoStack.pop();
+            
+            // Redraw all remaining paths
+            undoStack.forEach(({path, color, size}) => {
+                ctx.beginPath();
+                ctx.moveTo(path[0][0], path[0][1]);
+                path.forEach(([x, y]) => {
+                    ctx.lineTo(x, y);
+                });
+                ctx.strokeStyle = color;
+                ctx.lineWidth = size;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                ctx.closePath();
+            });
+        }
+
+        function clearCanvas() {
+            const bgColor = document.getElementById('bgColor').value;
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            undoStack.length = 0;
+        }
+
+        function saveCanvas() {
+            const link = document.createElement('a');
+            link.download = 'drawing.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Event listeners
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        document.getElementById('undoBtn').addEventListener('click', undo);
+        document.getElementById('clearBtn').addEventListener('click', clearCanvas);
+        document.getElementById('saveBtn').addEventListener('click', saveCanvas);
+
+        document.getElementById('bgColor').addEventListener('change', (e) => {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = e.target.value;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.putImageData(imageData, 0, 0);
+        });
+    </script>
+</body>
+</html>

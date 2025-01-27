@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Quiz App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      text-align: center;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .result {
+      font-size: 1.2em;
+      margin-top: 20px;
+    }
+    .review {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="quiz">
+      <div id="question" class="question"></div>
+      <div id="options"></div>
+      <button id="next" onclick="nextQuestion()" style="display: none;">Next</button>
+    </div>
+    <div id="result" class="result" style="display: none;"></div>
+    <div id="review" class="review" style="display: none;"></div>
+    <button id="restart" onclick="restartQuiz()" style="display: none;">Restart</button>
+  </div>
+
+  <script>
+    const quiz = [
+      {
+        question: "What is the capital of France?",
+        options: ["Berlin", "Madrid", "Paris", "Lisbon"],
+        correct: 2,
+        explanation: "The capital of France is Paris."
+      },
+      {
+        question: "What is 2 + 2?",
+        options: ["3", "4", "5", "6"],
+        correct: 1,
+        explanation: "2 + 2 equals 4."
+      },
+      {
+        question: "What is the largest planet in our Solar System?",
+        options: ["Earth", "Mars", "Jupiter", "Saturn"],
+        correct: 2,
+        explanation: "Jupiter is the largest planet in the Solar System."
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let userAnswers = [];
+
+    function loadQuestion() {
+      const questionElement = document.getElementById("question");
+      const optionsElement = document.getElementById("options");
+      const nextButton = document.getElementById("next");
+
+      const currentQuestion = quiz[currentQuestionIndex];
+
+      questionElement.textContent = currentQuestion.question;
+      optionsElement.innerHTML = "";
+
+      currentQuestion.options.forEach((option, index) => {
+        const button = document.createElement("button");
+        button.textContent = option;
+        button.onclick = () => selectAnswer(index);
+        optionsElement.appendChild(button);
+      });
+
+      nextButton.style.display = "none";
+    }
+
+    function selectAnswer(index) {
+      const currentQuestion = quiz[currentQuestionIndex];
+      userAnswers[currentQuestionIndex] = index;
+
+      if (index === currentQuestion.correct) {
+        score++;
+      }
+
+      const explanation = document.createElement("p");
+      explanation.textContent = currentQuestion.explanation;
+      explanation.style.color = index === currentQuestion.correct ? "green" : "red";
+      document.getElementById("options").appendChild(explanation);
+
+      document.getElementById("next").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+
+      if (currentQuestionIndex < quiz.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      document.getElementById("quiz").style.display = "none";
+      document.getElementById("result").style.display = "block";
+      document.getElementById("review").style.display = "block";
+      document.getElementById("restart").style.display = "inline-block";
+
+      const resultElement = document.getElementById("result");
+      resultElement.textContent = `You scored ${score} out of ${quiz.length}.`;
+
+      const reviewElement = document.getElementById("review");
+      reviewElement.innerHTML = "<h3>Review Answers:</h3>";
+
+      quiz.forEach((question, index) => {
+        const userAnswer = userAnswers[index];
+        const correctAnswer = question.correct;
+
+        const reviewItem = document.createElement("p");
+        reviewItem.textContent = `Q: ${question.question} \n Your Answer: ${question.options[userAnswer] || "No Answer"} \n Correct Answer: ${question.options[correctAnswer]}`;
+        reviewElement.appendChild(reviewItem);
+      });
+    }
+
+    function restartQuiz() {
+      currentQuestionIndex = 0;
+      score = 0;
+      userAnswers = [];
+
+      document.getElementById("quiz").style.display = "block";
+      document.getElementById("result").style.display = "none";
+      document.getElementById("review").style.display = "none";
+      document.getElementById("restart").style.display = "none";
+
+      loadQuestion();
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>

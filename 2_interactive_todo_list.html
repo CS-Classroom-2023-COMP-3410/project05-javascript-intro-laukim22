@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f8fc;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+        }
+
+        .task-input {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .task-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .task-input button {
+            padding: 10px 20px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        .task-input button:hover {
+            background-color: #357ab8;
+        }
+
+        .filters {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .filters button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .filters button.active {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+            cursor: grab;
+        }
+
+        li.dragging {
+            opacity: 0.5;
+            background-color: #eef5ff;
+        }
+
+        li.completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .task-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .task-buttons button {
+            padding: 5px;
+            border: none;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .task-buttons button:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive To-Do List</h1>
+
+        <div class="task-input">
+            <input type="text" id="taskInput" placeholder="Add a new task...">
+            <button onclick="addTask()">Add</button>
+        </div>
+
+        <div class="filters">
+            <button onclick="filterTasks('all')" class="active" id="filter-all">All</button>
+            <button onclick="filterTasks('completed')" id="filter-completed">Completed</button>
+            <button onclick="filterTasks('pending')" id="filter-pending">Pending</button>
+        </div>
+
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let currentFilter = 'all';
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            if (taskInput.value.trim() !== '') {
+                tasks.push({ text: taskInput.value, completed: false });
+                taskInput.value = '';
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        function toggleComplete(index) {
+            tasks[index].completed = !tasks[index].completed;
+            saveTasks();
+            renderTasks();
+        }
+
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            saveTasks();
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            const filteredTasks = tasks.filter(task => {
+                if (currentFilter === 'all') return true;
+                return currentFilter === 'completed' ? task.completed : !task.completed;
+            });
+
+            filteredTasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = task.completed ? 'completed' : '';
+                li.draggable = true;
+                li.addEventListener('dragstart', () => li.classList.add('dragging'));
+                li.addEventListener('dragend', () => li.classList.remove('dragging'));
+
+                li.innerHTML = `
+                    <label>
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleComplete(${index})">
+                        <span>${task.text}</span>
+                    </label>
+                    <div class="task-buttons">
+                        <button onclick="deleteTask(${index})">Delete</button>
+                    </div>
+                `;
+
+                taskList.appendChild(li);
+            });
+
+            addDragAndDrop();
+        }
+
+        function filterTasks(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filters button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`filter-${filter}`).classList.add('active');
+            renderTasks();
+        }
+
+        function addDragAndDrop() {
+            const list = document.getElementById('taskList');
+            const items = list.querySelectorAll('li');
+
+            items.forEach(item => {
+                item.addEventListener('dragover', event => {
+                    event.preventDefault();
+                    const dragging = document.querySelector('.dragging');
+                    list.insertBefore(dragging, item.nextSibling);
+                });
+            });
+
+            list.addEventListener('drop', () => {
+                const newOrder = Array.from(list.children).map(li => li.querySelector('span').textContent);
+                tasks = newOrder.map(text => tasks.find(task => task.text === text));
+                saveTasks();
+                renderTasks();
+            });
+        }
+
+        renderTasks();
+    </script>
+</body>
+</html>

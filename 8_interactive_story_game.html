@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Story Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      text-align: center;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .progress-bar {
+      width: 100%;
+      background-color: #ddd;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    .progress {
+      height: 20px;
+      width: 0;
+      background-color: #4caf50;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="story"></div>
+    <div class="progress-bar">
+      <div class="progress" id="progress"></div>
+    </div>
+    <div id="choices"></div>
+    <button onclick="resetGame()">Reset</button>
+  </div>
+
+  <script>
+    const story = {
+      start: {
+        text: "You wake up in a dark forest. There are two paths ahead. Which one do you take?",
+        choices: [
+          { text: "Left Path", next: "left_path" },
+          { text: "Right Path", next: "right_path" }
+        ]
+      },
+      left_path: {
+        text: "You encounter a friendly fox who offers to guide you. Do you follow it?",
+        choices: [
+          { text: "Follow the fox", next: "follow_fox" },
+          { text: "Ignore the fox", next: "ignore_fox" }
+        ]
+      },
+      right_path: {
+        text: "You come across a river. Do you try to cross it or walk along the bank?",
+        choices: [
+          { text: "Cross the river", next: "cross_river" },
+          { text: "Walk along the bank", next: "walk_bank" }
+        ]
+      },
+      follow_fox: {
+        text: "The fox leads you to a hidden village. The villagers offer you food and shelter. Do you accept?",
+        choices: [
+          { text: "Accept the offer", next: "accept_offer" },
+          { text: "Decline and move on", next: "decline_offer" }
+        ]
+      },
+      ignore_fox: {
+        text: "You get lost in the forest. After wandering for hours, you find a cave. Do you enter?",
+        choices: [
+          { text: "Enter the cave", next: "enter_cave" },
+          { text: "Keep walking", next: "keep_walking" }
+        ]
+      },
+      cross_river: {
+        text: "You successfully cross the river and find a hidden treasure. You win!",
+        choices: []
+      },
+      walk_bank: {
+        text: "You encounter a bear and cannot escape. Game over.",
+        choices: []
+      },
+      accept_offer: {
+        text: "The villagers share their wisdom and help you find your way home. You win!",
+        choices: []
+      },
+      decline_offer: {
+        text: "You leave the village but soon realize you are lost again. Game over.",
+        choices: []
+      },
+      enter_cave: {
+        text: "Inside the cave, you find ancient artifacts and a map leading to treasure. You win!",
+        choices: []
+      },
+      keep_walking: {
+        text: "You walk for hours and collapse from exhaustion. Game over.",
+        choices: []
+      }
+    };
+
+    let currentStep = localStorage.getItem('currentStep') || 'start';
+    let progress = parseInt(localStorage.getItem('progress')) || 0;
+
+    function updateStory() {
+      const storyElement = document.getElementById('story');
+      const choicesElement = document.getElementById('choices');
+      const progressBar = document.getElementById('progress');
+
+      const step = story[currentStep];
+      storyElement.textContent = step.text;
+
+      choicesElement.innerHTML = '';
+      step.choices.forEach(choice => {
+        const button = document.createElement('button');
+        button.textContent = choice.text;
+        button.onclick = () => makeChoice(choice.next);
+        choicesElement.appendChild(button);
+      });
+
+      progressBar.style.width = `${progress}%`;
+    }
+
+    function makeChoice(nextStep) {
+      currentStep = nextStep;
+      const totalSteps = 6; // Total steps in the story
+      progress = Math.min((Object.keys(story).indexOf(currentStep) / totalSteps) * 100, 100);
+
+      localStorage.setItem('currentStep', currentStep);
+      localStorage.setItem('progress', progress);
+
+      updateStory();
+    }
+
+    function resetGame() {
+      currentStep = 'start';
+      progress = 0;
+
+      localStorage.removeItem('currentStep');
+      localStorage.removeItem('progress');
+
+      updateStory();
+    }
+
+    updateStory();
+  </script>
+</body>
+</html>
